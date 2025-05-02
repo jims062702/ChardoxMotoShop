@@ -1,0 +1,183 @@
+body {
+    justify-content: center;
+  }
+  /* ✅ Full-page background & centering */
+  .client-login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  
+  /* ✅ Glassmorphism Login Box */
+  .login-box {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    width: 450px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  /* ✅ Login Title */
+  .login-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    margin-bottom: 20px;
+  }
+  
+  /* ✅ Form & Inputs */
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* ✅ Input Container */
+  .input-container {
+    position: relative;
+  }
+  
+  /* ✅ Input Fields */
+  .login-input {
+    width: 100%;
+    padding: 14px 40px;
+    font-size: 16px;
+    color: black;
+    background: white;
+    border: 1px solid gray;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  /* ✅ Icons inside Input Fields */
+  .input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: gray;
+    font-size: 18px;
+  }
+  
+  /* ✅ Login Button */
+  .login-button {
+    width: 100%;
+    background: black;
+    color: white;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+  }
+  
+  .login-button:hover {
+    background: rgb(0, 0, 0);
+    transform: scale(1.05);
+  }
+  
+  .login-button:disabled {
+    background: #666;
+    transform: none;
+    cursor: not-allowed;
+  }
+  
+  /* ✅ Register Link */
+  .register-text {
+    color: black;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  
+  /* ✅ Register Link */
+  .register-link1 {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    transition: 0.3s ease-in-out;
+    font-weight: bold;
+  }
+  
+  .register-link1:hover {
+    color: #535bf2;
+  }
+  
+  /* ✅ Error Message */
+  .error-message {
+    background: rgba(255, 0, 0, 0.1);
+    color: red;
+    font-size: 14px;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  /* ✅ NEW STYLES FOR PASSWORD VALIDATION AND SHOW/HIDE TOGGLE */
+  
+  /* Input error state */
+  .input-error {
+    border-color: #ff3333 !important;
+    box-shadow: 0 0 0 1px #ff3333 !important;
+  }
+  
+  /* Password toggle button */
+  .password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 16px;
+    z-index: 2;
+  }
+  
+  .password-toggle:hover {
+    color: #333;
+  }
+  
+  /* Password requirements container */
+  .password-requirements {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.2);
+    font-size: 0.85rem;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Validation message styling */
+  .validation-message {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    padding: 3px 0;
+  }
+  
+  .validation-icon {
+    margin-right: 5px;
+    font-size: 14px;
+  }
+  
+  .validation-message.success {
+    color: #4caf50;
+  }
+  
+  .validation-message.error {
+    color: #ff3333;
+  }
+  
+  

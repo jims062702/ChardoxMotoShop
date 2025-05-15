@@ -15,6 +15,8 @@ router.get("/", async (req, res) => {
         s.customer, 
         s.total_amount as totalAmount, 
         s.sale_date as date,
+        s.payment_method as paymentMethod,
+        s.status,
         si.item_name as itemName,
         si.quantity as quantity,
         si.id as id
@@ -23,15 +25,15 @@ router.get("/", async (req, res) => {
       ORDER BY s.sale_date DESC, s.id DESC
     `)
 
-    // If we have results but they contain comma-separated items, split them
+    // Process the results but preserve the original quantities
     if (salesItems.length > 0) {
       const processedItems = []
       let newId = 1
 
       for (const item of salesItems) {
-        // Check if the item name contains commas
-        if (item.itemName && item.itemName.includes(",")) {
-          // Split by comma and create a row for each item
+        // Only split if necessary and preserve the original quantity
+        if (item.itemName && item.itemName.includes(",") && !item.quantity) {
+          // This case should rarely happen - only if quantity is missing
           const itemNames = item.itemName
             .split(",")
             .map((name) => name.trim())
@@ -44,15 +46,18 @@ router.get("/", async (req, res) => {
               customer: item.customer,
               totalAmount: item.totalAmount,
               date: item.date,
+              paymentMethod: item.paymentMethod,
+              status: item.status || "Completed",
               itemName: name,
               quantity: 1, // Default quantity for split items
             })
           }
         } else {
-          // Single item, keep as is but ensure it has a unique ID
+          // Keep the original item with its quantity intact
           processedItems.push({
             ...item,
             id: newId++,
+            status: item.status || "Completed",
           })
         }
       }
@@ -71,7 +76,7 @@ router.get("/", async (req, res) => {
 
 // Add a new sale
 router.post("/add", async (req, res) => {
-  const { customer, items, totalAmount, paymentMethod, date, orderId } = req.body
+  const { customer, items, totalAmount, paymentMethod, date, orderId, status } = req.body
 
   if (!customer || !items || !totalAmount || !paymentMethod) {
     return res.status(400).json({ error: "Missing required fields" })
@@ -82,7 +87,8 @@ router.post("/add", async (req, res) => {
     await db.promise().query(`
       ALTER TABLE sales 
       ADD COLUMN IF NOT EXISTS total_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) NOT NULL;
+      ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) NOT NULL,
+      ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'Completed'
     `)
 
     // Start a transaction
@@ -90,9 +96,9 @@ router.post("/add", async (req, res) => {
 
     // Insert the sale record (if orderId exists, include it)
     const [result] = await db.promise().query(
-      `INSERT INTO sales (customer, total_amount, payment_method, sale_date, order_id) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [customer, totalAmount, paymentMethod, date, orderId || null],
+      `INSERT INTO sales (customer, total_amount, payment_method, sale_date, order_id, status) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [customer, totalAmount, paymentMethod, date, orderId || null, status || "Completed"],
     )
 
     const saleId = result.insertId
@@ -124,6 +130,33 @@ router.post("/add", async (req, res) => {
   }
 })
 
+// Add a new endpoint to update sale status
+router.put("/update-status/:id", async (req, res) => {
+  const { id } = req.params
+  const { status } = req.body
+
+  if (!status) {
+    return res.status(400).json({ error: "Status is required" })
+  }
+
+  try {
+    const [result] = await db.promise().query("UPDATE sales SET status = ? WHERE id = ?", [status, id])
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Sale not found" })
+    }
+
+    res.json({
+      message: "Status updated successfully",
+      saleId: id,
+      status,
+    })
+  } catch (error) {
+    console.error("❌ Database Error:", error)
+    res.status(500).json({ error: "Failed to update status", details: error.message })
+  }
+})
+
 // Get details of a specific sale
 router.get("/:id", async (req, res) => {
   const { id } = req.params
@@ -150,4 +183,3 @@ router.get("/:id", async (req, res) => {
 })
 
 export default router
-

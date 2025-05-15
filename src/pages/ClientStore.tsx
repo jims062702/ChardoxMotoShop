@@ -500,7 +500,6 @@ const ClientStore = () => {
 
       <Container className="mt-4">
         {/* Alert Messages */}
-        
 
         <Row>
           {/* Categories Sidebar */}
@@ -705,107 +704,135 @@ const ClientStore = () => {
       </Modal>
 
       {/* Checkout Modal */}
-      <Modal show={showCheckout} onHide={() => setShowCheckout(false)} dialogClassName="modern-modal checkout-modal">
+      <Modal
+        show={showCheckout}
+        onHide={() => setShowCheckout(false)}
+        size="xl"
+        dialogClassName="cart-modal-wide modern-modal"
+      >
         <Modal.Header closeButton className="border-0 pb-0">
           <Modal.Title className="modal-title-modern">Checkout</Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-0">
           <div className="checkout-container">
-            <div className="checkout-section">
-              <h5 className="section-title">Customer Information</h5>
-              <Form className="modern-form">
-                <Form.Group className="mb-3">
-                  <Form.Label>Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter your name"
-                    value={customerInfo.name}
-                    onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                    required
-                    className="modern-input"
-                  />
-                </Form.Group>
+            <Row>
+              <Col md={7}>
+                <div className="checkout-section">
+                  <h5 className="section-title">Customer Information</h5>
+                  <Form className="modern-form">
+                    <Form.Group className="mb-3">
+                      <Form.Label>Name</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter your name"
+                        value={customerInfo.name}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                        required
+                        className="modern-input"
+                      />
+                    </Form.Group>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Email (Optional)</Form.Label>
-                  <Form.Control
-                    type="email"
-                    placeholder="Enter your email"
-                    value={customerInfo.email}
-                    onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                    className="modern-input"
-                  />
-                </Form.Group>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Email (Optional)</Form.Label>
+                      <Form.Control
+                        type="email"
+                        placeholder="Enter your email"
+                        value={customerInfo.email}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
+                        className="modern-input"
+                      />
+                    </Form.Group>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Phone Number</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    placeholder="Enter your phone number"
-                    value={customerInfo.phone}
-                    onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                    required
-                    className="modern-input"
-                  />
-                </Form.Group>
-              </Form>
-            </div>
-
-            <div className="checkout-section">
-              <h5 className="section-title">Payment Method</h5>
-              <div className="payment-methods modern">
-                <div
-                  className={`payment-method-card ${paymentMethod === "cash" ? "selected" : ""}`}
-                  onClick={() => setPaymentMethod("cash")}
-                >
-                  <FaDollarSign size={24} />
-                  <span>Cash</span>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Phone Number</Form.Label>
+                      <Form.Control
+                        type="tel"
+                        placeholder="Enter your phone number"
+                        value={customerInfo.phone}
+                        onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                        required
+                        className="modern-input"
+                      />
+                    </Form.Group>
+                  </Form>
                 </div>
 
-                <div
-                  className={`payment-method-card ${paymentMethod === "e-wallet" ? "selected" : ""}`}
-                  onClick={() => setPaymentMethod("e-wallet")}
-                >
-                  <FaCreditCard size={24} />
-                  <span>E-Wallet</span>
-                </div>
-              </div>
-
-              {/* QR Code for E-Wallet - Only show when e-wallet is selected */}
-              {paymentMethod === "e-wallet" && (
-                <div className="qr-code-container">
-                  <h6>Scan QR Code to Pay</h6>
-                  <div className="qr-code-wrapper">
-                    <img
-                      src="/public/images/1.jpg?height=200&width=200"
-                      alt="E-Wallet QR Code"
-                      className="qr-code-image"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="checkout-section">
-              <h5 className="section-title">Order Summary</h5>
-              <div className="order-items">
-                {cart.map((item) => (
-                  <div key={item.id} className="order-item">
-                    <div className="order-item-info">
-                      <span className="order-item-name">{item.name}</span>
-                      <span className="order-item-quantity">x{item.quantity}</span>
+                <div className="checkout-section">
+                  <h5 className="section-title">Payment Method</h5>
+                  <div className="payment-methods modern">
+                    <div
+                      className={`payment-method-card ${paymentMethod === "cash" ? "selected" : ""}`}
+                      onClick={() => setPaymentMethod("cash")}
+                    >
+                      <FaDollarSign size={24} />
+                      <span>Cash</span>
                     </div>
-                    <span className="order-item-price">₱{(item.price * item.quantity).toLocaleString()}</span>
+
+                    <div
+                      className={`payment-method-card ${paymentMethod === "e-wallet" ? "selected" : ""}`}
+                      onClick={() => setPaymentMethod("e-wallet")}
+                    >
+                      <FaCreditCard size={24} />
+                      <span>E-Wallet</span>
+                    </div>
                   </div>
-                ))}
-              </div>
-              <div className="order-summary modern">
-                <div className="order-total">
-                  <span>Total</span>
-                  <span className="total-amount">₱{calculateTotal().toLocaleString()}</span>
+
+                  {/* QR Code for E-Wallet - Only show when e-wallet is selected */}
+                  <div style={{display:"flex"}}>
+                  {paymentMethod === "e-wallet" && (
+                    <div className="qr-code-container">
+                      <h6>Scan Gcash QR Code to Pay</h6>
+                      <div className="qr-code-wrapper" style={{ width: "300px", height: "300px", padding: "0.5rem" }}>
+                        <img
+                          src="/public/images/gcashQR.jfif?height=300&width=300"
+                          alt="E-Wallet QR Code"
+                          className="qr-code-image"
+                          style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {paymentMethod === "e-wallet" && (
+                    <div className="qr-code-container">
+                      <h6>Scan Paymaya QR Code to Pay</h6>
+                      <div className="qr-code-wrapper" style={{ width: "300px", height: "300px", padding: "0.5rem" }}>
+                        <img
+                          src="/public/images/paymayaQR.jfif?height=300&width=300"
+                          alt="E-Wallet QR Code"
+                          className="qr-code-image"
+                          style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  </div>
                 </div>
-              </div>
-            </div>
+                
+              </Col>
+
+              <Col md={5}>
+                <div className="checkout-section">
+                  <h5 className="section-title">Order Summary</h5>
+                  <div className="order-items">
+                    {cart.map((item) => (
+                      <div key={item.id} className="order-item">
+                        <div className="order-item-info">
+                          <span className="order-item-name">{item.name}</span>
+                          <span className="order-item-quantity">x{item.quantity}</span>
+                        </div>
+                        <span className="order-item-price">₱{(item.price * item.quantity).toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="order-summary modern">
+                    <div className="order-total">
+                      <span>Total</span>
+                      <span className="total-amount">₱{calculateTotal().toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </Col>
+            </Row>
           </div>
         </Modal.Body>
         <Modal.Footer className="border-0 pt-0">

@@ -76,6 +76,9 @@ const AdminDashboard: React.FC = () => {
   const [newPrice, setNewPrice] = useState<string>("")
   const navigate = useNavigate()
 
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
+
   const handleLogout = () => {
     sessionStorage.removeItem("adminToken")
     navigate("/")
@@ -527,12 +530,25 @@ const AdminDashboard: React.FC = () => {
     }
   }
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showProfileDropdown && !event.target.closest(".dropdown")) {
+        setShowProfileDropdown(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [showProfileDropdown])
+
   return (
     <div className="d-flex">
       <div
         style={{
-          width: "250px",
-          backgroundColor: "#f8f9fa",
+          width: "100%",
+          backgroundColor: "#fbfbfb",
           padding: "20px",
           display: "flex",
           flexDirection: "column",
@@ -556,10 +572,31 @@ const AdminDashboard: React.FC = () => {
         }}
       >
         <div className="header mb-4">
-          <h2 className="mb-4">Inventory Management Dashboard</h2>
-          <Button variant="outline-light" onClick={handleLogout} className="d-flex align-items-center">
-            <FaSignOutAlt className="me-2" /> Logout
-          </Button>
+          <h2 className="mb-4" style={{ color: "black" }}>
+            Inventory Management Dashboard
+          </h2>
+          <div
+            className="dropdown"
+            style={{ position: "absolute", right: "20px", top: "50%", transform: "translateY(-50%)" }}
+          >
+            <div
+              className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+              style={{ width: "40px", height: "40px", cursor: "pointer" }}
+              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+            >
+              A
+            </div>
+            <div
+              className={`dropdown-menu dropdown-menu-end shadow ${showProfileDropdown ? "show" : ""}`}
+              style={{ position: "absolute", right: 0, marginTop: "5px" }}
+            >
+              <div className="dropdown-item fw-bold text-center py-2">Admin Profile</div>
+              <div className="dropdown-divider"></div>
+              <button className="dropdown-item d-flex align-items-center" onClick={() => setShowLogoutModal(true)}>
+                <FaSignOutAlt className="me-2 text-danger" /> Logout
+              </button>
+            </div>
+          </div>
         </div>
         <br />
         <br />
@@ -572,7 +609,7 @@ const AdminDashboard: React.FC = () => {
 
         <div className="row mb-4">
           <div className="col-md-3">
-            <Card className="text-center shadow-sm" style={{ minHeight: "140px" }}>
+            <Card className="text-center " style={{ minHeight: "140px", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.10)" }}>
               <Card.Body>
                 <Package size={24} className="mb-2 text-primary" />
                 <Card.Title style={{ fontSize: "24px", marginBottom: "10px" }}>{dashboardStats.totalItems}</Card.Title>
@@ -581,7 +618,7 @@ const AdminDashboard: React.FC = () => {
             </Card>
           </div>
           <div className="col-md-3">
-            <Card className="text-center shadow-sm" style={{ minHeight: "140px" }}>
+            <Card className="text-center " style={{ minHeight: "140px", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.10)" }}>
               <Card.Body>
                 <Tag size={24} className="mb-2 text-success" />
                 <Card.Title style={{ fontSize: "24px", marginBottom: "10px" }}>
@@ -592,7 +629,7 @@ const AdminDashboard: React.FC = () => {
             </Card>
           </div>
           <div className="col-md-3">
-            <Card className="text-center shadow-sm" style={{ minHeight: "140px" }}>
+            <Card className="text-center " style={{ minHeight: "140px", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.10)" }}>
               <Card.Body>
                 <ArrowDown size={24} className="mb-2 text-danger" />
                 <Card.Title style={{ fontSize: "24px", marginBottom: "10px" }}>
@@ -603,7 +640,7 @@ const AdminDashboard: React.FC = () => {
             </Card>
           </div>
           <div className="col-md-3">
-            <Card className="text-center shadow-sm" style={{ minHeight: "140px" }}>
+            <Card className="text-center " style={{ minHeight: "140px", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.10)" }}>
               <Card.Body>
                 <Heart size={24} className="mb-2 text-danger" />
                 <Card.Title style={{ fontSize: "24px", marginBottom: "10px" }}>
@@ -616,7 +653,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="dashboard-container">
-          <Card className="shadow-sm mb-4">
+          <Card className=" mb-4" style={{ boxShadow: "0 4px 12px rgba(0, 0, 0, 0.10)" }}>
             <Card.Body>
               <h5 className="mb-3">Inventory Management</h5>
 
@@ -669,7 +706,7 @@ const AdminDashboard: React.FC = () => {
             </Card.Body>
           </Card>
 
-          <Card className="shadow-sm">
+          <Card className="" style={{ boxShadow: "0 4px 12px rgba(0, 0, 0, 0.10)" }}>
             <Card.Body>
               <div className="table-responsive">
                 <table className="table table-hover align-middle">
@@ -1274,6 +1311,28 @@ const AdminDashboard: React.FC = () => {
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShowPriceHistoryModal(false)}>
               Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+        {/* Logout Confirmation Modal */}
+        <Modal show={showLogoutModal} onHide={() => setShowLogoutModal(false)} centered>
+          <Modal.Header closeButton className="bg-light">
+            <Modal.Title>
+              <div className="d-flex align-items-center">
+                <FaSignOutAlt className="me-2 text-danger" />
+                Confirm Logout
+              </div>
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>Are you sure you want to logout? Any unsaved changes will be lost.</p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowLogoutModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleLogout}>
+              Logout
             </Button>
           </Modal.Footer>
         </Modal>

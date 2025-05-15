@@ -3,16 +3,16 @@
 .adminSidebar {
     position: fixed;
     left: 0;
-    top: 0;
+    top: 71px;
     height: 100vh;
     width: 250px;
-    background: #1e1e2f;
+    background: #ffffff;
     color: #fff;
     display: flex;
     flex-direction: column;
     padding: 20px;
-    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
+    border-right: 0.5px solid rgba(121, 121, 121, 0.3); /* 30% opacity */
   }
   
   
@@ -24,9 +24,27 @@
     font-size: 20px;
     font-weight: bold;
     padding-bottom: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.2);
     text-align: center;
   }
+  /* .menuItem {
+    color: #444;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    transition: color 0.3s ease;
+  }
+  
+  .menuItem:hover {
+    color: #000;
+  }
+  
+  .active {
+    color: #007bff; 
+  } */
+  
+  
   
   .menuIcon {
     font-size: 24px;
@@ -44,15 +62,17 @@
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    color: #b0b3c0;
+    color: #0e2431;
     font-size: 16px;
     padding: 12px;
     border-radius: 5px;
     transition: all 0.3s ease;
   }
+
+  
   
   .menuItem:hover {
-    background: #4a4a6a;
+    background: #141416;
     color: #fff;
   }
   

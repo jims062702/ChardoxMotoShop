@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Card, Row, Col, Table, Form, Button, InputGroup, Pagination, Modal, Badge } from "react-bootstrap"
+import { Card, Row, Col, Table, Form, Button, InputGroup, Pagination, Modal, Badge, Alert } from "react-bootstrap"
 import {
   FaSearch,
   FaCalendar,
@@ -14,19 +14,20 @@ import {
   FaChartBar,
   FaChartPie,
   FaChartLine,
+  FaTag,
 } from "react-icons/fa"
 import { useNavigate } from "react-router-dom"
 import AdminSidebar from "../components/AdminSidebar"
 import "bootstrap/dist/css/bootstrap.min.css"
 import "../admin/AdminDashboard.css"
-import { Edit, FileBarChart, Clock, CheckCircle, AlertCircle, Undo2} from "lucide-react"
+import { Edit, FileBarChart, Clock, CheckCircle, AlertCircle } from "lucide-react"
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
   PieChart,
@@ -46,6 +47,22 @@ interface Sale {
   quantity: number
   paymentMethod?: string
   status?: string
+  price: number
+}
+
+// Add this function after the interface definition
+const isWithinWarrantyPeriod = (saleDate: string): boolean => {
+  const purchaseDate = new Date(saleDate)
+  const currentDate = new Date()
+
+  // Calculate the difference in milliseconds
+  const differenceInTime = currentDate.getTime() - purchaseDate.getTime()
+
+  // Convert the difference to days
+  const differenceInDays = differenceInTime / (1000 * 3600 * 24)
+
+  // Return true if within 3 days
+  return differenceInDays <= 3
 }
 
 const SalesRecords = () => {
@@ -110,6 +127,7 @@ const SalesRecords = () => {
       // Convert all dates to Philippines timezone before setting state
       const formattedSales = data.map((sale: Sale) => ({
         ...sale,
+        price: sale.price || 1, // Default to 1 if price is not available
         date: new Date(sale.date).toLocaleDateString("en-PH", { timeZone: "Asia/Manila" }),
       }))
 
@@ -169,8 +187,6 @@ const SalesRecords = () => {
         return "bg-success"
       case "returned":
         return "bg-warning"
-      case "cancelled":
-        return "bg-danger"
       default:
         return "bg-secondary"
     }
@@ -179,11 +195,9 @@ const SalesRecords = () => {
   const getStatusIcon = (status: string) => {
     switch (status?.toLowerCase()) {
       case "completed":
-        return <CheckCircle size={16}/>
+        return <CheckCircle size={16} />
       case "returned":
-        return <AlertCircle size={16}/>
-      case "cancelled":
-        return <Undo2 size={16}/>
+        return <AlertCircle size={16} />
       default:
         return <Clock size={16} />
     }
@@ -212,7 +226,7 @@ const SalesRecords = () => {
   const totalItems = filteredSales.reduce((sum, sale) => sum + sale.quantity, 0)
 
   // Calculate total sales amount - ensure we're adding numbers, not concatenating strings
-  const totalSales = filteredSales.reduce((sum, sale) => sum + Number(sale.totalAmount), 0)
+  const totalSales = filteredSales.reduce((sum, sale) => sum + sale.price * sale.quantity, 0)
 
   // Calculate unique customers
   const uniqueCustomers = new Set(filteredSales.map((sale) => sale.customer)).size
@@ -457,7 +471,7 @@ const SalesRecords = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => `₱${Number(value).toLocaleString()}`} />
+                    <RechartsTooltip formatter={(value) => `₱${Number(value).toLocaleString()}`} />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
@@ -469,7 +483,7 @@ const SalesRecords = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => `₱${Number(value).toLocaleString()}`} />
+                    <RechartsTooltip formatter={(value) => `₱${Number(value).toLocaleString()}`} />
                     <Legend />
                     <Bar dataKey="value" name="Total Amount" fill="#8884d8">
                       {statusData.map((entry, index) => (
@@ -486,7 +500,7 @@ const SalesRecords = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
-                    <Tooltip formatter={(value) => `₱${Number(value).toLocaleString()}`} />
+                    <RechartsTooltip formatter={(value) => `₱${Number(value).toLocaleString()}`} />
                     <Legend />
                     <Line type="monotone" dataKey="amount" name="Sales Amount" stroke="#8884d8" activeDot={{ r: 8 }} />
                   </LineChart>
@@ -539,9 +553,9 @@ const SalesRecords = () => {
                 </Form.Group>
               </Col>
               <Col lg={2} md={6} className="d-flex align-items-end mb-3">
-                <Button variant="success" className="w-100">
+                {/* <Button variant="success" className="w-100">
                   <FaDownload className="me-2" /> Export
-                </Button>
+                </Button> */}
               </Col>
             </Row>
           </Card.Body>
@@ -553,17 +567,18 @@ const SalesRecords = () => {
               <Table hover className="align-middle" style={{ borderCollapse: "separate", borderSpacing: "0 8px" }}>
                 <thead className="table-dark">
                   <tr>
-                    <th className="ps-3 rounded-start" style={{ borderBottom: "none" }}>
+                    <th className="ps-3 rounded-start" style={{ borderBottom: "none", width: "5%" }}>
                       ID
                     </th>
-                    <th style={{ borderBottom: "none" }}>Customer</th>
-                    <th style={{ borderBottom: "none", width: "25%" }}>Product Name</th>
-                    <th style={{ borderBottom: "none" }}>Quantity</th>
-                    <th style={{ borderBottom: "none" }}>Total Amount</th>
-                    <th style={{ borderBottom: "none" }}>Payment Method</th>
-                    <th style={{ borderBottom: "none" }}>Status</th>
-                    <th style={{ borderBottom: "none" }}>Purchased Date</th>
-                    <th className="pe-3 rounded-end" style={{ borderBottom: "none" }}>
+                    <th style={{ borderBottom: "none", width: "10%" }}>Customer</th>
+                    <th style={{ borderBottom: "none", width: "20%" }}>Product Name</th>
+                    <th style={{ borderBottom: "none", width: "7%" }}>Quantity</th>
+                    <th style={{ borderBottom: "none", width: "10%" }}>Unit Price</th>
+                    <th style={{ borderBottom: "none", width: "10%" }}>Total Amount</th>
+                    <th style={{ borderBottom: "none", width: "10%" }}>Payment Method</th>
+                    <th style={{ borderBottom: "none", width: "10%" }}>Status</th>
+                    <th style={{ borderBottom: "none", width: "10%" }}>Purchased Date</th>
+                    <th className="pe-3 rounded-end" style={{ borderBottom: "none", width: "8%" }}>
                       Actions
                     </th>
                   </tr>
@@ -582,9 +597,15 @@ const SalesRecords = () => {
                             {sale.itemName}
                           </div>
                         </td>
-                        <td>{sale.quantity}</td>
-                        <td className="fw-bold">₱{sale.totalAmount.toLocaleString()}</td>
-                        <td>
+                        <td className="text-center">{sale.quantity}</td>
+                        <td className="text-center">
+                          <div className="d-flex align-items-center justify-content-center">
+                            <FaTag className="me-1 text-primary" size={14} />
+                            <span>₱{sale.price.toLocaleString()}</span>
+                          </div>
+                        </td>
+                        <td className="fw-bold text-center">₱{(sale.price * sale.quantity).toLocaleString()}</td>
+                        <td className="text-center">
                           <Badge
                             bg={sale.paymentMethod === "cash" ? "success" : "primary"}
                             className="px-3 py-2"
@@ -593,20 +614,20 @@ const SalesRecords = () => {
                             {sale.paymentMethod === "cash" ? "Cash" : "E-Wallet"}
                           </Badge>
                         </td>
-                        <td>
+                        <td className="text-center">
                           <Badge
                             bg={getStatusBadgeColor(sale.status || "Completed").replace("bg-", "")}
                             className="px-3 py-2"
                             style={{ fontSize: "0.85rem" }}
                           >
-                            <div className="d-flex align-items-center">
+                            <div className="d-flex align-items-center justify-content-center">
                               {getStatusIcon(sale.status || "Completed")}
                               <span className="ms-1">{sale.status || "Completed"}</span>
                             </div>
                           </Badge>
                         </td>
-                        <td>{sale.date}</td>
-                        <td className="pe-3 rounded-end">
+                        <td className="text-center">{sale.date}</td>
+                        <td className="pe-3 rounded-end text-center">
                           <Button
                             variant="outline-primary"
                             size="sm"
@@ -632,7 +653,7 @@ const SalesRecords = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={9} className="text-center py-5 text-muted">
+                      <td colSpan={10} className="text-center py-5 text-muted">
                         <div className="d-flex flex-column align-items-center">
                           <FaFileAlt size={40} className="mb-3 text-secondary" />
                           <h5>No sales records found</h5>
@@ -696,12 +717,27 @@ const SalesRecords = () => {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            {selectedSale && !isWithinWarrantyPeriod(selectedSale.date) && (
+              <Alert variant="warning" className="mb-3">
+                <div className="d-flex align-items-center">
+                  <AlertCircle size={18} className="me-2" />
+                  <span>This item is past the 3-day warranty period and cannot be returned.</span>
+                </div>
+              </Alert>
+            )}
             <Form.Group>
               <Form.Label>Select New Status</Form.Label>
-              <Form.Select value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
+              <Form.Select
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+                disabled={
+                  selectedSale && !isWithinWarrantyPeriod(selectedSale.date) && selectedSale.status === "Completed"
+                }
+              >
                 <option value="Completed">Completed</option>
-                <option value="Returned">Returned</option>
-                <option value="Cancelled">Cancelled</option>
+                <option value="Returned" disabled={selectedSale && !isWithinWarrantyPeriod(selectedSale.date)}>
+                  Returned {selectedSale && !isWithinWarrantyPeriod(selectedSale.date) ? "(Warranty Expired)" : ""}
+                </option>
               </Form.Select>
             </Form.Group>
           </Modal.Body>
@@ -712,7 +748,10 @@ const SalesRecords = () => {
             <Button
               variant="primary"
               onClick={handleStatusUpdate}
-              disabled={statusUpdateLoading}
+              disabled={
+                statusUpdateLoading ||
+                (selectedSale && !isWithinWarrantyPeriod(selectedSale.date) && selectedSale.status === "Completed")
+              }
               className="d-flex align-items-center justify-content-center"
             >
               {statusUpdateLoading ? (

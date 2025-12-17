@@ -7,6 +7,7 @@ import dotenv from "dotenv"
 import authRoutes from "./routes/authRoutes.js"
 import partsRoutes from "./routes/partsRoutes.js"
 import salesRoutes from "./routes/salesRoutes.js"
+import reportRoutes from "./routes/reportRoutes.js" // Add this line
 import bodyParser from "body-parser"
 import path from "path"
 
@@ -90,7 +91,8 @@ app.get("/api/check-db-structure", async (req, res) => {
 // 🔹 Routes (Placed after middleware setup)
 app.use("/api/auth", authRoutes)
 app.use("/api/parts", partsRoutes)
-app.use("/api/sales", salesRoutes) // ✅ Moved here to ensure it follows middleware
+app.use("/api/sales", salesRoutes)
+app.use("/api/reports", reportRoutes) // Add this line
 
 // 🔹 Client Authentication API Endpoints
 
@@ -163,4 +165,3 @@ app.listen(PORT, () => {
 })
 
 export { db }
-

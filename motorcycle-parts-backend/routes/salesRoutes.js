@@ -19,6 +19,7 @@ router.get("/", async (req, res) => {
         s.status,
         si.item_name as itemName,
         si.quantity as quantity,
+        si.price as price,
         si.id as id
       FROM sales s
       JOIN sale_items si ON s.id = si.sale_id

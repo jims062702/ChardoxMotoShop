@@ -570,7 +570,7 @@ const ClientStore = () => {
                           onClick={() => addToCart(product)}
                           disabled={product.stock === 0}
                         >
-                          ADD TO CART
+                          BUY
                         </button>
                       </div>
                     </Col>
@@ -749,10 +749,30 @@ const ClientStore = () => {
                         type="tel"
                         placeholder="Enter your phone number"
                         value={customerInfo.phone}
-                        onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                        onChange={(e) => {
+                          // Get the input value
+                          let inputValue = e.target.value
+
+                          // Ensure it starts with +63
+                          if (!inputValue.startsWith("+63")) {
+                            inputValue = "+63" + inputValue.replace(/^\+63/, "")
+                          }
+
+                          // Remove any non-digit characters except the leading +
+                          inputValue = "+" + inputValue.substring(1).replace(/[^\d]/g, "")
+
+                          // Limit to +63 followed by 10 digits
+                          if (inputValue.length > 13) {
+                            inputValue = inputValue.substring(0, 13)
+                          }
+
+                          setCustomerInfo({ ...customerInfo, phone: inputValue })
+                        }}
                         required
                         className="modern-input"
+                        defaultValue="+63"
                       />
+                      <Form.Text className="text-muted">Format: +63 followed by 10 digits</Form.Text>
                     </Form.Group>
                   </Form>
                 </div>
@@ -778,36 +798,35 @@ const ClientStore = () => {
                   </div>
 
                   {/* QR Code for E-Wallet - Only show when e-wallet is selected */}
-                  <div style={{display:"flex"}}>
-                  {paymentMethod === "e-wallet" && (
-                    <div className="qr-code-container">
-                      <h6>Scan Gcash QR Code to Pay</h6>
-                      <div className="qr-code-wrapper" style={{ width: "300px", height: "300px", padding: "0.5rem" }}>
-                        <img
-                          src="/public/images/gcashQR.jfif?height=300&width=300"
-                          alt="E-Wallet QR Code"
-                          className="qr-code-image"
-                          style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                        />
+                  <div style={{ display: "flex" }}>
+                    {paymentMethod === "e-wallet" && (
+                      <div className="qr-code-container">
+                        <h6>Scan Gcash QR Code to Pay</h6>
+                        <div className="qr-code-wrapper" style={{ width: "300px", height: "300px", padding: "0.5rem" }}>
+                          <img
+                            src="/public/images/gcashQR.jfif?height=300&width=300"
+                            alt="E-Wallet QR Code"
+                            className="qr-code-image"
+                            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  {paymentMethod === "e-wallet" && (
-                    <div className="qr-code-container">
-                      <h6>Scan Paymaya QR Code to Pay</h6>
-                      <div className="qr-code-wrapper" style={{ width: "300px", height: "300px", padding: "0.5rem" }}>
-                        <img
-                          src="/public/images/paymayaQR.jfif?height=300&width=300"
-                          alt="E-Wallet QR Code"
-                          className="qr-code-image"
-                          style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                        />
+                    )}
+                    {paymentMethod === "e-wallet" && (
+                      <div className="qr-code-container">
+                        <h6>Scan Paymaya QR Code to Pay</h6>
+                        <div className="qr-code-wrapper" style={{ width: "300px", height: "300px", padding: "0.5rem" }}>
+                          <img
+                            src="/public/images/paymayaQR.jfif?height=300&width=300"
+                            alt="E-Wallet QR Code"
+                            className="qr-code-image"
+                            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                   </div>
                 </div>
-                
               </Col>
 
               <Col md={5}>

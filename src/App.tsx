@@ -3,6 +3,7 @@ import Home from "./pages/Home"
 import AdminLayout from "./pages/admin/AdminLayout"
 import ManageParts from "./pages/admin/ManageParts"
 import SalesRecords from "./pages/admin/SalesRecords"
+import StockReports from "./pages/admin/StockReports"
 import AdminDashboard from "./pages/admin/AdminDashboard"
 import AdminLogin from "./pages/AdminLogin"
 import AdminRegister from "./pages/AdminRegister"
@@ -33,6 +34,7 @@ const App = () => {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="manage-parts" element={<ManageParts />} />
               <Route path="sales-records" element={<SalesRecords />} />
+              <Route path="stock-reports" element={<StockReports />} />
             </Route>
 
             {/* Admin Auth Routes - Outside of AdminLayout */}
@@ -64,4 +66,3 @@ const App = () => {
 }
 
 export default App
-

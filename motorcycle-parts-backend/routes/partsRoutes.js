@@ -32,6 +32,8 @@ router.post("/add", upload.single("image"), (req, res) => {
       console.error("❌ Database Error:", err)
       return res.status(500).json({ error: "Failed to add new part." })
     }
+
+    // The trigger will automatically record this addition in item_additions table
     res.status(201).json({ message: "Part added successfully!", partId: result.insertId })
   })
 })
@@ -109,7 +111,7 @@ router.get("/priceHistory/:id", async (req, res) => {
   }
 })
 
-router.put("/update-stock/:id", (req, res) => {
+router.put("/update-stock/:id", async (req, res) => {
   console.log("🟢 Stock Update Route Hit:", req.params.id, req.body)
 
   const { id } = req.params
@@ -121,56 +123,76 @@ router.put("/update-stock/:id", (req, res) => {
 
   amount = Number.parseInt(amount)
 
-  db.query("SELECT stock FROM parts WHERE id = ?", [id], (err, result) => {
-    if (err) {
-      console.error("❌ Error fetching stock:", err)
-      return res.status(500).json({ message: "Error retrieving stock data" })
-    }
+  try {
+    // Get current part information
+    const [currentPart] = await db.promise().query("SELECT * FROM parts WHERE id = ?", [id])
 
-    if (result.length === 0) {
+    if (currentPart.length === 0) {
       return res.status(404).json({ message: "Part not found" })
     }
 
-    const currentStock = Number.parseInt(result[0].stock)
+    const part = currentPart[0]
+    const currentStock = Number.parseInt(part.stock)
     let newStock = operation === "increase" ? currentStock + amount : currentStock - amount
 
     if (newStock < 0) newStock = 0
 
     console.log("Updating stock:", { id, currentStock, amount, operation, newStock })
 
-    db.query("UPDATE parts SET stock = ? WHERE id = ?", [newStock, id], (updateErr, updateResult) => {
-      if (updateErr) {
-        console.error("❌ Database Error:", updateErr)
-        return res.status(500).json({ message: "Failed to update stock" })
-      }
+    // Update the stock (this will trigger the automatic tracking via database trigger)
+    const [updateResult] = await db.promise().query("UPDATE parts SET stock = ? WHERE id = ?", [newStock, id])
 
-      console.log("✅ Stock updated:", updateResult)
+    if (updateResult.affectedRows === 0) {
+      return res.status(400).json({ message: "Stock update failed, no rows affected." })
+    }
 
-      if (updateResult.affectedRows === 0) {
-        return res.status(400).json({ message: "Stock update failed, no rows affected." })
-      }
-
-      res.json({ message: `Stock ${operation}d successfully!`, newStock })
-    })
-  })
+    console.log("✅ Stock updated:", updateResult)
+    res.json({ message: `Stock ${operation}d successfully!`, newStock })
+  } catch (error) {
+    console.error("❌ Database Error:", error)
+    res.status(500).json({ message: "Failed to update stock" })
+  }
 })
 
 router.delete("/delete/:id", async (req, res) => {
   const { id } = req.params
 
   try {
-    // First check if the part exists
+    // First check if the part exists and get its information
     const [partResults] = await db.promise().query("SELECT * FROM parts WHERE id = ?", [id])
 
     if (partResults.length === 0) {
       return res.status(404).json({ error: "Part not found" })
     }
 
+    const part = partResults[0]
+
     // Start a transaction to ensure all operations succeed or fail together
     await db.promise().query("START TRANSACTION")
 
     try {
-      // First delete all price history records for this part
+      // Record the removal in item_removals table
+      await db.promise().query(
+        `
+        INSERT INTO item_removals (
+          product_id, product_name, category, quantity, 
+          unit_price, total_value, removed_by, reason, image
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+        [
+          part.id,
+          part.name,
+          part.category || "Uncategorized",
+          part.stock,
+          part.price,
+          part.stock * part.price,
+          "Admin",
+          "Item deleted from inventory",
+          part.image,
+        ],
+      )
+
+      // Delete all price history records for this part
       console.log("Deleting price history for part:", id)
       await db.promise().query("DELETE FROM price_history WHERE part_id = ?", [id])
 
@@ -182,7 +204,7 @@ router.delete("/delete/:id", async (req, res) => {
       await db.promise().query("COMMIT")
 
       res.json({
-        message: "Part deleted successfully!",
+        message: "Part deleted successfully and removal recorded!",
         affectedRows: deleteResult.affectedRows,
       })
     } catch (error) {
